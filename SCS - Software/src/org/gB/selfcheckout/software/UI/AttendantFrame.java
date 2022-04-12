@@ -37,8 +37,8 @@ public class AttendantFrame extends JFrame {
 		alert = new AlertPage(this);
 		shutDown = new AttendantStationShutDown(this);
 		
-		for (State state : states)
-			carts.add(new AttendantCartScreen(this, state));
+		for (int i = 0; i < states.size(); i ++)
+			carts.add(new AttendantCartScreen(this, states.get(i), cFrames.get(i)));
 		
 		addPanels();
 		
