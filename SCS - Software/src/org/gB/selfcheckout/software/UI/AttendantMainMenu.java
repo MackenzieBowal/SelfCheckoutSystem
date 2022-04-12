@@ -157,7 +157,13 @@ public class AttendantMainMenu extends JPanel {
 			
 			blockStation.addActionListener(e -> {
 				CustomerFrame cFrame = attendantFrame.cFrames.get(stationIndex);
-				cFrame.cardLayout.show(cFrame.getContentPane(), "blockedScreen");
+				if (blockStation.getText().compareTo("Block Station") == 0) {
+					blockStation.setText("Unblock Station");
+					cFrame.cardLayout.show(cFrame.getContentPane(), "blockedScreen");
+				} else {
+					blockStation.setText("Block Station");
+					cFrame.cardLayout.show(cFrame.getContentPane(), "startScreen");
+				}
 			});
 			
 			viewCart.addActionListener(e -> {

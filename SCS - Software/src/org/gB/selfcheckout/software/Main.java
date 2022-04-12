@@ -2,17 +2,14 @@ package org.gB.selfcheckout.software;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import org.gB.selfcheckout.software.UI.AttendantFrame;
 import org.gB.selfcheckout.software.UI.CustomerFrame;
 import org.lsmr.selfcheckout.Barcode;
 import org.lsmr.selfcheckout.BarcodedItem;
-import org.lsmr.selfcheckout.Item;
 import org.lsmr.selfcheckout.Numeral;
 import org.lsmr.selfcheckout.PLUCodedItem;
 import org.lsmr.selfcheckout.PriceLookupCode;
-import org.lsmr.selfcheckout.external.CardIssuer;
 import org.lsmr.selfcheckout.external.ProductDatabases;
 import org.lsmr.selfcheckout.products.BarcodedProduct;
 import org.lsmr.selfcheckout.products.PLUCodedProduct;

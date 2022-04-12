@@ -99,7 +99,7 @@ public class CustomerScanItem extends JPanel implements ActionListener {
 		// Add barcoded products to drop down menu
 		ProductDatabases.BARCODED_PRODUCT_DATABASE.forEach((barcode, barcodedProduct) -> 
 				indexMap.put(barcodedProduct.getDescription(), barcodedProduct));
-		indexMap.forEach((description, product) -> 	itemMenu.addItem(description));
+		indexMap.forEach((description, product) -> itemMenu.addItem(description));
 	}
 	
 
