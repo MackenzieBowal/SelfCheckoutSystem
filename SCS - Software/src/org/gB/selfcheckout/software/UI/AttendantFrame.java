@@ -1,31 +1,48 @@
 package org.gB.selfcheckout.software.UI;
 
 import java.awt.CardLayout;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JFrame;
+
+import org.gB.selfcheckout.software.AttendantControl;
+import org.gB.selfcheckout.software.LoginDB;
+import org.gB.selfcheckout.software.State;
 
 /**
  * JFrame to contain the UI used by attendants.
  */
 public class AttendantFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
+	List<State> states;
+	List<CustomerFrame> cFrames;
+	AttendantControl ac;
 	public CardLayout cardLayout = new CardLayout();
-	LoginScreen login = new LoginScreen(this);
+	LoginScreen login;
 	AttendantMainMenu main;
-	AttendantLookupProduct lookup = new AttendantLookupProduct(this);;
-	AttendantCartScreen cart = new AttendantCartScreen();
-	AttendantStationShutDown shutDown = new AttendantStationShutDown(this);
+	ArrayList<AttendantCartScreen> carts = new ArrayList<AttendantCartScreen>();
+	AttendantStationShutDown shutDown;
 	AlertPage alert;
-	
 
-	public AttendantFrame (int numStations) {
+	public AttendantFrame (List<State> states, List<CustomerFrame> cFrames, AttendantControl ac) {
 		super("Attendant Station");
-		
-		main = new AttendantMainMenu(numStations, this);
+		this.states = states;
+		this.cFrames = cFrames;
+		this.ac = ac;
+		LoginDB ldb = new LoginDB();
+		ldb.addUser("", "");
+		login = new LoginScreen(this, ldb);
+		main = new AttendantMainMenu(this, states);
 		alert = new AlertPage(this);
+		shutDown = new AttendantStationShutDown(this);
+		
+		for (int i = 0; i < states.size(); i ++)
+			carts.add(new AttendantCartScreen(this, states.get(i), cFrames.get(i)));
 		
 		addPanels();
 		
-		cardLayout.show(this.getContentPane(), "shutDown");
+		cardLayout.show(this.getContentPane(), "login");
 		this.setLayout(cardLayout);
 		this.setSize(1280, 720);
 		this.pack();
@@ -38,9 +55,9 @@ public class AttendantFrame extends JFrame {
 
 		getContentPane().add(login, "login");
 		getContentPane().add(main, "main");
-		getContentPane().add(cart, "cart");
+		for (int i = 0; i < carts.size(); i ++)
+			getContentPane().add(carts.get(i), "cart" + Integer.toString(i));
 		getContentPane().add(shutDown, "shutDown");
-		getContentPane().add(lookup, "lookup");
 		getContentPane().add(alert, "alert");
 	}
 }

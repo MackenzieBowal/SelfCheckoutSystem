@@ -1,223 +1,203 @@
 package org.gB.selfcheckout.software.UI;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map.Entry;
 
-import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-/*
-Based around the list example found on the oracle site:
-https://docs.oracle.com/javase/tutorial/uiswing/examples/components/ListDemoProject/src/components/ListDemo.java
-*/
+import org.gB.selfcheckout.software.ItemDatabase;
+import org.gB.selfcheckout.software.State;
+import org.lsmr.selfcheckout.Barcode;
+import org.lsmr.selfcheckout.BarcodedItem;
+import org.lsmr.selfcheckout.Item;
+import org.lsmr.selfcheckout.PLUCodedItem;
+import org.lsmr.selfcheckout.PriceLookupCode;
+import org.lsmr.selfcheckout.external.ProductDatabases;
+import org.lsmr.selfcheckout.products.BarcodedProduct;
+import org.lsmr.selfcheckout.products.PLUCodedProduct;
+import org.lsmr.selfcheckout.products.Product;
+
+/**
+ * Panel for the Attendant to view a Customer's Cart
+ * 
+ * Can remove a product from the customer's cart
+ * 
+ * Based around the list example found on the oracle site:
+ * https://docs.oracle.com/javase/tutorial/uiswing/examples/components/ListDemoProject/src/components/ListDemo.java
+ * 
+ **/
 public class AttendantCartScreen extends JPanel implements ListSelectionListener {
-    //TODO: Modify to accomodate for actual items
-    private JList<String> items;
-    private DefaultListModel<String> itemModel;
-    private JTextField itemName;
-    private JButton addButton, removeButton, backButton;
-    public AttendantCartScreen() {
-        this.setLayout(new GridBagLayout());
-        this.setPreferredSize(new Dimension(500, 500));
-        this.setMinimumSize(new Dimension(200, 200));
-        GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
+	private static final long serialVersionUID = 1L;
+	private AttendantFrame attendantFrame;
+	private State customerState;
+	private JList<Entry<Product, Integer>> items;
+	private DefaultListModel<Entry<Product, Integer>> itemModel;
+	private JButton removeButton, backButton, addButton;
+	private JTextField addField;
 
-        // TODO: Fill itemModel with Customer Cart
-        itemModel = new DefaultListModel<String>();
-        itemModel.addElement("Items");
-        itemModel.addElement("Are");
-        itemModel.addElement("Complicated");
+	/**
+	 * Generates a JPanel for the Attendant Cart Screen
+	 *
+	 * @param state The state of the current customer's station
+	 */
+	public AttendantCartScreen(AttendantFrame attendantFrame, State state, CustomerFrame cFrame) {
+		customerState = state;
+		this.attendantFrame = attendantFrame;
+		this.setLayout(new GridBagLayout());
+		this.setPreferredSize(new Dimension(500, 500));
+		this.setMinimumSize(new Dimension(200, 200));
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
 
-        //Create the list and put it in a scroll pane.
-        items = new JList<String>(itemModel);
-        items.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        items.setSelectedIndex(0);
-        items.addListSelectionListener(this);
-        items.setVisibleRowCount(10);
+		itemModel = new DefaultListModel<Entry<Product, Integer>>();
+		for (Entry<Product, Integer> entry : customerState.productCart.entrySet()) {
+			itemModel.addElement(entry);
+		}
 
-        JScrollPane listScrollPane = new JScrollPane(items);
-        c.weightx = 0.5;
-        c.weighty = 1.0;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridwidth = 3;
-        c.gridx = 0;
-        c.gridy = 0;
-        this.add(listScrollPane, c);
-        
-        /*
-        addButton = new JButton("Add");
-        AddListener addListener = new AddListener(addButton);
-        addButton.setActionCommand("Add");
-        addButton.addActionListener(addListener);
-        addButton.setEnabled(false);
-        */
+		// Create the list and put it in a scroll pane.
+		items = new JList<Entry<Product, Integer>>(itemModel);
+		items.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		items.setSelectedIndex(0);
+		items.addListSelectionListener(this);
+		items.setVisibleRowCount(10);
 
-        removeButton = new JButton("Remove");
-        RemoveListener removeListener = new RemoveListener(removeButton);
-        removeButton.setActionCommand("Remove");
-        removeButton.addActionListener(removeListener);
+		JScrollPane listScrollPane = new JScrollPane(items);
+		c.weightx = 0.5;
+		c.weighty = 1.0;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.gridwidth = 3;
+		c.gridx = 0;
+		c.gridy = 0;
+		this.add(listScrollPane, c);
 
-        backButton = new JButton("Back");
-        BackListener backListener = new BackListener(backButton);
-        backButton.setActionCommand("Back");
-        backButton.addActionListener(backListener);
+		removeButton = new JButton("Remove");
+		RemoveListener removeListener = new RemoveListener();
+		removeButton.setActionCommand("Remove");
+		removeButton.addActionListener(removeListener);
 
-        /*
-        itemName = new JTextField(10);
-        itemName.addActionListener(addListener);
-        itemName.getDocument().addDocumentListener(addListener);
-        */
-        String name = itemModel.getElementAt(items.getSelectedIndex()).toString();
-        JPanel buttonPane = new JPanel();
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
-        buttonPane.add(backButton);
-        buttonPane.add(Box.createHorizontalStrut(5));
-        buttonPane.add(new JSeparator(SwingConstants.VERTICAL));
-        buttonPane.add(Box.createHorizontalStrut(5));
-        buttonPane.add(removeButton);
-        
-        //buttonPane.add(itemName);
-        //buttonPane.add(addButton);
-        buttonPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-        c.weightx = 0.8;
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(10,0,0,0);
-        c.gridx = 1;
-        c.gridy = 1;
-        this.add(buttonPane, c);
-    }
-    @Override
-    public void valueChanged(ListSelectionEvent event) {
-        if (event.getValueIsAdjusting() == false) {
+		backButton = new JButton("Back");
+		BackListener backListener = new BackListener();
+		backButton.setActionCommand("Back");
+		backButton.addActionListener(backListener);
 
-            if (items.getSelectedIndex() == -1) {
-            //No selection, disable fire button.
-                removeButton.setEnabled(false);
+		addField = new JTextField();
 
-            } else {
-            //Selection, enable the fire button.
-                removeButton.setEnabled(true);
-            }
-        }
-    }
-    class BackListener implements ActionListener {
-        private JButton button;
+		addButton = new JButton("Add Item");
+		addButton.addActionListener(e -> {
+			String input = addField.getText();
+			addField.setText("");
+			for (Entry<PriceLookupCode, PLUCodedProduct> elem : ProductDatabases.PLU_PRODUCT_DATABASE.entrySet()) {
+				if (elem.getValue().getDescription() == input) {
+					for (Item it : customerState.idb.getInstance().itemList) {
+						if (it instanceof PLUCodedItem) {
+							PLUCodedItem pluItem = (PLUCodedItem) it;
+							if (pluItem.getPLUCode().toString()
+									.compareTo(elem.getValue().getPLUCode().toString()) == 0) {
+								Double weight = pluItem.getWeight();
+								cFrame.currentItem = new PLUCodedItem(pluItem.getPLUCode(), weight);
+								cFrame.st.scannedItems.add(cFrame.currentItem);
+								cFrame.st.scs.baggingArea.add(cFrame.currentItem);
+								customerState.addProduct(elem.getValue());
+								return;
+							}
+						}
+					}
+				}
+			}
+			for (Entry<Barcode, BarcodedProduct> elem : ProductDatabases.BARCODED_PRODUCT_DATABASE.entrySet()) {
+				if (elem.getValue().getDescription() == input) {
+					ItemDatabase idb = new ItemDatabase();
+					Item it = idb.getInstance().getItem(elem.getKey());
+					cFrame.currentItem = it;
+					cFrame.st.scannedItems.add(it);
+					cFrame.st.scs.baggingArea.add(it);
+					customerState.addProduct(elem.getValue());
+					return;
+				}
 
-        public BackListener(JButton button) {
-            this.button = button;
-        }
-        public void actionPerformed(ActionEvent e) {
-            //TODO: Back button implementation
-        }
-    }
-    class RemoveListener implements ActionListener {
-        private JButton button;
+			}
+		});
 
-        public RemoveListener(JButton button) {
-            this.button = button;
-        }
-        public void actionPerformed(ActionEvent e) {
-            //This method can be called only if
-            //there's a valid selection
-            //so go ahead and remove whatever's selected.
-            int index = items.getSelectedIndex();
-            //TODO: Remove Item from Checkout
-            itemModel.remove(index);
+//        String name = itemModel.getElementAt(items.getSelectedIndex()).toString();
+		JPanel buttonPane = new JPanel();
+		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+		buttonPane.add(backButton);
+		buttonPane.add(Box.createHorizontalStrut(5));
+		buttonPane.add(removeButton);
+		buttonPane.add(Box.createHorizontalStrut(5));
+		buttonPane.add(addField);
+		buttonPane.add(Box.createHorizontalStrut(5));
+		buttonPane.add(addButton);
 
-            int size = itemModel.getSize();
+		buttonPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		c.weightx = 0.8;
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.insets = new Insets(10, 0, 0, 0);
+		c.gridx = 1;
+		c.gridy = 1;
+		this.add(buttonPane, c);
+	}
 
-            if (size == 0) { //Nobody's left, disable firing.
-                removeButton.setEnabled(false);
+	@Override
+	public void valueChanged(ListSelectionEvent event) {
+		if (event.getValueIsAdjusting() == false) {
 
-            } else { //Select an index.
-                if (index == itemModel.getSize()) {
-                    //removed item in last position
-                    index--;
-                }
+			if (items.getSelectedIndex() == -1) {
+				// No selection, disable fire button.
+				removeButton.setEnabled(false);
 
-                items.setSelectedIndex(index);
-                items.ensureIndexIsVisible(index);
-            }
-        }
-    }
-    class AddListener implements ActionListener, DocumentListener {
-        private boolean alreadyEnabled = false;
-        private JButton button;
+			} else {
+				// Selection, enable the fire button.
+				removeButton.setEnabled(true);
+			}
+		}
+	}
 
-        public AddListener(JButton button) {
-            this.button = button;
-        }
+	class BackListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			attendantFrame.cardLayout.show(attendantFrame.getContentPane(), "main");
+		}
+	}
 
-        //Required by ActionListener.
-        public void actionPerformed(ActionEvent e) {
-            String name = itemName.getText();
+	class RemoveListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			Entry<Product, Integer> entry = items.getSelectedValue();
+			if (entry == null)
+				return;
+			customerState.productCart.remove(entry.getKey());
+			int index = items.getSelectedIndex();
+			itemModel.remove(index);
 
-            //User didn't type in a unique name...
-            if (name.equals("") || alreadyInList(name)) {
-                Toolkit.getDefaultToolkit().beep();
-                itemName.requestFocusInWindow();
-                itemName.selectAll();
-                return;
-            }
+			int size = itemModel.getSize();
 
-            int index = items.getSelectedIndex(); //get selected index
-            if (index == -1) { //no selection, so insert at beginning
-                index = 0;
-            } else {           //add after the selected item
-                index++;
-            }
+			if (size == 0) { // Nobody's left, disable firing.
+				removeButton.setEnabled(false);
 
-            itemModel.insertElementAt(itemName.getText(), index);
-            //If we just wanted to add to the end, we'd do this:
-            //listModel.addElement(employeeName.getText());
+			} else { // Select an index.
+				if (index == itemModel.getSize()) {
+					// removed item in last position
+					index--;
+				}
 
-            //Reset the text field.
-            itemName.requestFocusInWindow();
-            itemName.setText("");
-
-            //Select the new item and make it visible.
-            items.setSelectedIndex(index);
-            items.ensureIndexIsVisible(index);
-        }
-
-        //This method tests for string equality. You could certainly
-        //get more sophisticated about the algorithm.  For example,
-        //you might want to ignore white space and capitalization.
-        protected boolean alreadyInList(String name) {
-            return itemModel.contains(name);
-        }
-
-        //Required by DocumentListener.
-        public void insertUpdate(DocumentEvent e) {
-            enableButton();
-        }
-
-        //Required by DocumentListener.
-        public void removeUpdate(DocumentEvent e) {
-            handleEmptyTextField(e);
-        }
-
-        //Required by DocumentListener.
-        public void changedUpdate(DocumentEvent e) {
-            if (!handleEmptyTextField(e)) {
-                enableButton();
-            }
-        }
-
-        private void enableButton() {
-            if (!alreadyEnabled) {
-                button.setEnabled(true);
-            }
-        }
-
-        private boolean handleEmptyTextField(DocumentEvent e) {
-            if (e.getDocument().getLength() <= 0) {
-                button.setEnabled(false);
-                alreadyEnabled = false;
-                return true;
-            }
-            return false;
-        }
-    }
+				items.setSelectedIndex(index);
+				items.ensureIndexIsVisible(index);
+			}
+		}
+	}
 }
