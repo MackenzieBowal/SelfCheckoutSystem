@@ -98,51 +98,6 @@ public class SCSMain {
 		System.out.println(type);
 	}
 
-	/**
-	 *
-	 */
-	public static void checkout() {
-
-	}
-
-	/**
-	 *
-	 */
-	public static void proceedToPay() {
-
-	}
-
-	public static void payWithCard(BigDecimal amountToPay) {
-		/*
-		// Check that the user can pay
-		if (!state.paymentEnabled) {
-			error("Cannot pay without payment mode enabled");
-			return;
-		}
-		*/
-
-
-	}
-
-
-	public static void payWithCash() {
-
-	}
-
-	/**
-	 *
-	 */
-	public static void addCustomerBags() {
-
-	}
-
-	/**
-	 *
-	 */
-	public static void endAddCustomerBags() {
-
-	}
-
 	/** Prints a receipt to the customer
 	 * @throws OverloadException
 	 * @throws EmptyException
@@ -161,10 +116,4 @@ public class SCSMain {
 		scs.printer.removeReceipt();
 	}
 
-	/**
-	 *
-	 */
-	public static void dispenseChange() {
-
-	}
 }
